@@ -16,19 +16,18 @@
             android:layout_height="match_parent"
             android:id="@+id/webview" />
 
-        <com.google.vr.sdk.widgets.pano.VrPanoramaView
-            android:id="@+id/pano_view"
-            android:layout_margin="5dip"
-            android:layout_width="match_parent"
-            android:scrollbars="@null"
-            android:layout_height="250dip"/>
-
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="vr전환"
             android:id="@+id/btn"
-            android:layout_gravity="bottom || right" />
+            android:layout_gravity="bottom" />
+
+        <ImageButton
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:id="@+id/img"
+            android:visibility="invisible"/>
 
     </FrameLayout>
 

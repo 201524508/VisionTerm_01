@@ -1,7 +1,9 @@
 package com.example.visionterm_01;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,17 +17,21 @@ import android.widget.Toast;
 import com.google.vr.sdk.widgets.pano.VrPanoramaEventListener;
 import com.google.vr.sdk.widgets.pano.VrPanoramaView;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
+
+import javax.net.ssl.HttpsURLConnection;
 
 public class MainActivity extends AppCompatActivity {
     private WebView webView;
     private Button btn;
-
-    private VrPanoramaView panoview;
-    private Bitmap bitmap;
-    private VrPanoramaView.Options panoOptions = new VrPanoramaView.Options();
+    InputStream b;
+    Bitmap result;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,22 +50,12 @@ public class MainActivity extends AppCompatActivity {
         btn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                String currentUrl = webView.getUrl();
-                try {
-                    URL curUrl = new URL(currentUrl);
-                    bitmap = BitmapFactory.decodeStream(curUrl.openConnection().getInputStream());
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
+                final String url2 = webView.getUrl();
+                System.out.println("url2: " + url2);
 
-                panoview = (VrPanoramaView) findViewById(R.id.pano_view);
-                panoview.setEventListener(new ActivityEventListener());
-
-                panoOptions.inputType = VrPanoramaView.Options.TYPE_STEREO_OVER_UNDER;
-                panoview.loadImageFromBitmap(bitmap, panoOptions);
-                panoview.setDisplayMode(3);
+                Intent intent = new Intent(MainActivity.this, VrPanoramaActivity.class);
+                intent.putExtra("url", url2);
+                startActivity(intent);
             }
         });
     }
@@ -81,46 +77,5 @@ public class MainActivity extends AppCompatActivity {
         return super.onKeyDown(keyCode, event);
     }
 
-    @Override
-    protected void onPause() {
-        panoview.pauseRendering();
-        super.onPause();
-    }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        panoview.resumeRendering();
-    }
-
-    @Override
-    protected void onDestroy() {
-        // Destroy the widget and free memory.
-        panoview.shutdown();
-        super.onDestroy();
-    }
-
-    /**
-     * Listen to the important events from widget.
-     */
-    private class ActivityEventListener extends VrPanoramaEventListener {
-        /**
-         * Called by pano widget on the UI thread when it's done loading the image.
-         */
-        @Override
-        public void onLoadSuccess() {
-            //loadImageSuccessful = true;
-        }
-
-        /**
-         * Called by pano widget on the UI thread on any asynchronous error.
-         */
-        @Override
-        public void onLoadError(String errorMessage) {
-            //loadImageSuccessful = false;
-            Toast.makeText(
-                   MainActivity.this, "Error loading pano: " + errorMessage, Toast.LENGTH_LONG).show();
-            Log.e("TAG", "Error loading pano: " + errorMessage);
-        }
-    }
 }
