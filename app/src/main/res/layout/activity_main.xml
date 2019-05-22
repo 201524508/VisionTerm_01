@@ -7,28 +7,16 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <FrameLayout
+    <WebView
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:id="@+id/webview"
+        android:layout_weight="1"/>
 
-        <WebView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/webview" />
-
-        <Button
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="vr전환"
-            android:id="@+id/btn"
-            android:layout_gravity="bottom" />
-
-        <ImageButton
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:id="@+id/img"
-            android:visibility="invisible"/>
-
-    </FrameLayout>
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="VR모드로 보기"
+        android:id="@+id/btn" />
 
 </LinearLayout>

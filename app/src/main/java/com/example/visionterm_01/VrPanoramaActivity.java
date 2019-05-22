@@ -4,39 +4,25 @@ import android.app.Activity;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Message;
 import android.util.Log;
-import android.view.View;
-import android.webkit.WebView;
-import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.vr.sdk.widgets.pano.VrPanoramaEventListener;
 import com.google.vr.sdk.widgets.pano.VrPanoramaView;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
 
 public class VrPanoramaActivity extends Activity {
 
     private VrPanoramaView panoview;
-    private Bitmap bitmap;
+    private String key = "AIzaSyAefKkewKHIg69-pulc0QP3Jwg7PdibN4s";
     private VrPanoramaView.Options panoOptions = new VrPanoramaView.Options();
-    Handler handler = new Handler(){
-        public void handleMessage(Message msg){
-            if(msg.what == 0){
-                setPanoview();
-            }
-        }
-    };
+    private Bitmap bitmap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -49,54 +35,80 @@ public class VrPanoramaActivity extends Activity {
         setBitmap(currentUrl);
     }
 
+    public String coordinate(String s){
+        String x, y, result;
+        String str = s;
+
+        int index = str.indexOf("@");
+        String substr = str.substring(index+1);
+        String data[] = substr.split(",");
+        y = data[0];
+        x = data[1];
+
+        result = y + "," + x;
+
+        return result;
+    }
+
     public void setBitmap(String s){
-        final String s2 = s;
-        Thread thread = new Thread(new Runnable() {
-            @Override
-            public void run() {
+        String s2 = s;
+        String coor = coordinate(s2);
+        System.out.println("coor : " + coor);
+        final String url = "https://maps.googleapis.com/maps/api/streetview?size=600x300&location="+coor+"&fov=60&key="+key;
+        System.out.println("pano url : " + url);
+
+        Thread thread = new Thread(){
+            public void run(){
                 try {
-/*
-                    URL curUrl = new URL(s2);
-                    URLConnection conn = curUrl.openConnection();
-                    conn.connect();
-
-                    int nSize = conn.getContentLength();
-                    BufferedInputStream bis = new BufferedInputStream(conn.getInputStream(), nSize);
-*/
-
-                    URL url = new URL(s2);
-                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-                    connection.setDoInput(true);
-                    connection.connect();
-                    InputStream input = connection.getInputStream();
-                    bitmap = BitmapFactory.decodeStream(input);/*
-
-                    bitmap = BitmapFactory.decodeStream(bis);
-                    bis.close();*/
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
+                    InputStream in = new URL(url).openStream();
+                    Bitmap tmp = BitmapFactory.decodeStream(in);
+                    bitmap = makePano(tmp);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-        });
+        };
         thread.start();
 
         while(thread.getState() != Thread.State.TERMINATED){
             if(thread.getState() == Thread.State.TERMINATED){
-                handler.sendEmptyMessage(0);
                 break;
+
             }
         }
+
+        setPanoview(bitmap);
     }
 
-    public void setPanoview(){
+    public void setPanoview(Bitmap bit){
         panoview = (VrPanoramaView) findViewById(R.id.pano_view);
         panoview.setEventListener(new VrPanoramaActivity.ActivityEventListener());
 
         panoOptions.inputType = VrPanoramaView.Options.TYPE_STEREO_OVER_UNDER;
-        panoview.loadImageFromBitmap(bitmap, panoOptions);
+        panoview.loadImageFromBitmap(bit, panoOptions);
         panoview.setDisplayMode(3);
+    }
+
+    public Bitmap makePano(Bitmap bit){
+        Bitmap result = null;
+        Bitmap tmp = Bitmap.createBitmap(bit).copy(Bitmap.Config.ARGB_8888, true);
+
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inDither = true;
+        options.inPurgeable = true;
+
+        result = Bitmap.createScaledBitmap(bit, bit.getWidth(), bit.getHeight() + bit.getHeight(), true);
+
+        Paint p = new Paint();
+        p.setDither(true);
+        p.setFlags(Paint.ANTI_ALIAS_FLAG);
+
+        Canvas c = new Canvas(result);
+        c.drawBitmap(bit, 0, 0, p);
+
+        c.drawBitmap(tmp, 0, bit.getHeight(), p);
+
+        return result;
     }
 
     @Override
