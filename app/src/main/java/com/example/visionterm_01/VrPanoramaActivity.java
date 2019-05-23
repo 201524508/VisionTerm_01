@@ -20,7 +20,7 @@ import java.net.URL;
 public class VrPanoramaActivity extends Activity {
 
     private VrPanoramaView panoview;
-    private String key = "AIzaSyAefKkewKHIg69-pulc0QP3Jwg7PdibN4s";
+    private String key = YOUR API KEY;
     private VrPanoramaView.Options panoOptions = new VrPanoramaView.Options();
     private Bitmap bitmap;
 
